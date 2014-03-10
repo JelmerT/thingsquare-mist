@@ -1,0 +1,48 @@
+Replong sends commands to a specified receiver via a relay. The relay
+is typically a link-local neighbor and the receiver is multiple hops
+away. The purpose of Replong is to be able to jump into a network and
+send commands to nodes without having to join the RPL tree.
+
+The main function of Replong is
+
+int replong_send_command_within(int seconds,
+				const uint8_t *command, int command_len,
+				const uip_ip6addr_t *receiver);
+
+It scans the local neighborhood for potential relays and sends the
+command through one of them.
+
+Commands received by a Replong node are delivered to a callback
+function. The callback function is registered via:
+
+void replong_set_callback(void (* callback)(const uint8_t *command,
+					    int command_len,
+					    const uip_ipaddr_t *from,
+					    const uip_ipaddr_t *via));
+
+Before using the Replong module, call the init function:
+
+void replong_init(void);
+
+Replong also provides access to the neighborhood scanning
+mechanism. This can be used when sending multiple commands when it is
+unlikely that the neighborhood will change.
+
+Replong neighborhood scanning is made by sending a link-local
+multicast WHOTHERE request. Relays that receive the request reply with
+a unicast IMHERE message. The IMHERE is delayed a random amount of
+time. The interval is specified in the WHOTHERE message.
+
+Sending a WHOTHERE is done via
+
+void replong_send_whothere(int answer_within_seconds);
+
+The neighbors can be read through the list:
+
+const struct replong_neighbor *replong_neighbors(void);
+
+A command can be sent through a specified relay via:
+
+int replong_send_command(const uint8_t *command, int command_len,
+    			 const uip_ip6addr_t *receiver,
+			 const uip_ip6addr_t *relay);

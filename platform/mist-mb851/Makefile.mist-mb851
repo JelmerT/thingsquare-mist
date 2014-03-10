@@ -1,0 +1,16 @@
+CONTIKI_TARGET_MAIN = contiki-mist-mb851-main.c board.c
+
+MB851DIR=$(MIST)/contiki/platform/mbxxx
+
+CONTIKI_TARGET_SOURCEFILES+=
+
+STM32W_CPUREV=CC
+
+CPU_LD_CONFIG=$(MIST)/platform/$(TARGET)/mist-mb851-revd-gnu.ld
+
+include $(MB851DIR)/Makefile.mbxxx
+
+PLATFORMAPPS += simple-rpl simple-udp-ping network-reboot drowsie
+
+vpath %.c $(MB851DIR) $(MB851DIR)/dev
+CFLAGS += -I $(MB851DIR) -DPLATFORM_CONF=\"mist-mb851-platform-conf.h\"

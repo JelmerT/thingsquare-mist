@@ -1,0 +1,24 @@
+Those port mapping where obtained by reading the MSP-EXP430F5438
+Experimenter Board User's Guide (slau263g.pdf) and the CC1101 emk 434
+MHz schematics.
+
+LED red      P1.0
+LED yellow   P1.1
+
+
+Serial port  UCA1
+
+
+CC1101 SPI   UCB0
+
+CC1101 CSN   P3.0 (UBE0STE)
+CC1101 MOSI  P3.1 (UCB0SIMO/SDA)
+CC1101 MISO  P3.2 (UCB0SOMI/SCL)
+CC1101 SCK   P3.3 (UCB0CLK/STE)
+
+CC1101 GDO0  P1.7
+CC1101 GDO2  P1.3
+
+
+Button 1     P2.6
+

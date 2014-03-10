@@ -1,0 +1,13 @@
+ARCH_RADIO_SOURCES=cc2520-arch.c cc2520.c
+
+vpath %.c $(MIST)/platform/trxeb
+vpath %.h $(MIST)/platform/trxeb
+vpath %.S $(MIST)/platform/trxeb
+CFLAGS += -I $(MIST)/platform/trxeb
+
+include $(MIST)/platform/trxeb/Makefile.trxeb
+
+contiki-$(TARGET).a: ${addprefix $(OBJECTDIR)/,symbols.o}
+#	$(AR) rcf $@ $^
+
+

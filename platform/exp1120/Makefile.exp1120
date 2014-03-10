@@ -1,0 +1,12 @@
+ARCH_RADIO_SOURCES=cc1120-msp-arch.c
+PLATFORMAPPS+=cc1120
+CFLAGS += -DCC11xx_CC1120=1
+include $(MIST)/platform/mist-exp5438/Makefile.mist-exp5438
+
+contiki-$(TARGET).a: ${addprefix $(OBJECTDIR)/,symbols.o}
+#	$(AR) rcf $@ $^
+
+vpath %.c $(MIST)/platform/mist-exp5438
+vpath %.h $(MIST)/platform/mist-exp5438
+vpath %.S $(MIST)/platform/mist-exp5438
+CFLAGS += -I $(MIST)/platform/mist-exp5438

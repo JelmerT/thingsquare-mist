@@ -1,0 +1,117 @@
+
+CC2538DKDIR=$(MIST)/contiki/platform/cc2538dk
+MISTCC2538DKDIR=$(MIST)/platform/mist-cc2538dk
+
+CONTIKI_TARGET_SOURCEFILES+=contiki-mist-cc2538dk-main.c
+ifdef IAR
+else
+CONTIKI_TARGET_SOURCEFILES+=flash.c
+endif
+
+ifdef ID
+LDSCRIPT = cc2538-mist-id.ld
+
+.PHONY: cc2538-mist-id.ld
+endif # ID
+
+cc2538-mist-id.ld: $(MISTCC2538DKDIR)/cc2538-mist-id.lds
+	$(CPP) -DID=$(ID) -P -E $< -o $@
+
+CONTIKI_TARGET_SOURCEFILES+=enc28j60-arch.c
+include $(CC2538DKDIR)/Makefile.cc2538dk
+
+cc2538-mist-id.ld: $(MISTCC2538DKDIR)/cc2538-mist-id.lds
+	$(CPP) -DID=$(ID) -P -E $< -o $@
+
+
+CLEAN += *.bin *.mist-cc2538dk *.eth2538
+
+PLATFORMAPPS += simple-rpl aes drowsie enc28j60
+
+vpath %.c $(CC2538DKDIR)
+vpath %.c $(CC2538DKDIR)/dev
+#LDSCRIPT = $(MISTCC2538DKDIR)/cc2538-mist.ld
+
+CFLAGS += -I $(CC2538DKDIR) -I $(CC2538DKDIR)/dev -DPLATFORM_CONF=\"platform-conf.h\"
+
+#-------------------------------------------------------------------------------
+# print target usage
+help:
+	@echo Useful commands:
+	@echo "Store target"
+	@echo "   make TARGET=cc2538dk savetarget"
+	@echo "Compile into binary format"
+	@echo "   make myapp.bin"
+	@echo "Compile and upload to a CC2538dk node"
+	@echo "   make myapp.upload"
+	@echo "Upload a pre-compiled binary (named myapp.bin) to a CC2538dk node"
+	@echo "   make myapp.prebin-upload"
+	@echo "Erase mcu flash"
+	@echo "   make erase"
+
+# find folders so we can jump to the programmer tool folder and back, needed
+# for the programmer tool and works only in Cygwin (the tool is a Windows tool)
+# Further, the tool must be in the search path
+ifndef PROGRAMMER
+PROGRAMMER=ArmProgConsole.exe
+endif
+ifndef PROGRAMMER_PATH
+CURRENT_PROJ_DIR=$(shell 'pwd')
+PROGRAMMER_BIN_PATH := $(shell dirname "`which $(PROGRAMMER)`")
+endif
+
+.PRECIOUS: %.hex
+ifdef IAR # ------------------------------------------------------------------
+# make elf-file
+%.hex: %.elf
+	$(OC) $^ --ihex --verbose $@
+
+# make binary-file
+%.bin: %.elf
+	$(OC) $^ --bin --verbose $@
+
+CUSTOM_RULE_C_TO_OBJECTDIR_O=1
+$(OBJECTDIR)/%.o: %.c
+	$(CC) $(CFLAGS) $< -o $@
+	@$(FINALIZE_DEPENDENCY)
+
+else    # /IAR ------------------------------------------------------------------
+# make elf-file
+%.hex: %.elf
+	$(OC) $^ -Oihex $@
+
+# make binary-file
+%.bin: %.elf
+	$(OC) $^ -O binary $@
+
+endif   # IAR ------------------------------------------------------------------
+
+
+# compile and upload a binary firmware to the node
+%.upload: %.bin
+	@echo "*** Erasing CC2538 memory"
+	@cd $(PROGRAMMER_BIN_PATH) ; $(PROGRAMMER) "S(2538)" CE
+	@echo ""
+	@echo "*** Programming node with the file $<"
+	@cd $(CURRENT_PROJ_DIR) ; $(PROGRAMMER) "S(2538)" PB=0x200000 F=$<
+
+# upload a pre-compiled binary firmware (without updating it) to the node
+# note: requires the binary to be named .bin
+.PHONY: %.prebin-upload
+%.prebin-upload:
+	@echo "*** Erasing CC2538 memory"
+	@cd $(PROGRAMMER_BIN_PATH) ; $(PROGRAMMER) "S(2538)" CE
+	@echo ""
+	@echo "*** Programming node with the file $(@:.ul=.bin)"
+	@cd $(CURRENT_PROJ_DIR) ; $(PROGRAMMER) "S(2538)" PB=0x200000 F=$(@:.ul=.bin)
+
+# erase the microcontroller flash
+erase:
+	@echo "*** Erasing CC2538 memory"
+	@cd $(PROGRAMMER_BIN_PATH) ; $(PROGRAMMER) "S(2538)" CE
+
+
+ifdef IDS
+%.bins:
+	$(foreach id,$(IDS),make TARGET=$(TARGET) ID=$(id) $*.bin ; mv $*.bin $*-$(id).bin ; )
+endif #IDS

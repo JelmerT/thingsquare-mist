@@ -1,0 +1,16 @@
+include $(MIST)/platform/mist-exp5438/Makefile.mist-exp5438
+
+# http://www.ti.com/lit/ug/swru294a/swru294a.pdf
+
+CYGWIN_DEV_ID="TI SmartRFEB USB CDC Serial Port"
+
+ifdef LDSCRIPT
+LDFLAGS += -T $(LDSCRIPT)
+endif
+
+vpath %.c $(MIST)/platform/mist-exp5438
+CFLAGS += -I $(MIST)/platform/mist-exp5438
+
+ifeq ($(TARGET), trxeb)
+${error Error: Please instead compile for TARGET=trxeb1120 or TARGET=trxeb2520}
+endif

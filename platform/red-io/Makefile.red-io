@@ -1,0 +1,50 @@
+
+ECONOTAGDIR=$(MIST)/contiki/platform/econotag
+
+CONTIKI_TARGET_SOURCEFILES+=leds-arch.c enc28j60-arch.c contiki-red-io-main.c
+
+CONTIKI_CORE=contiki-red-io-main
+include $(ECONOTAGDIR)/Makefile.econotag
+
+PLATFORMAPPS += enc28j60 ip64 simple-rpl ip64-webserver simple-udp-ping network-reboot
+
+vpath %.c $(ECONOTAGDIR)
+vpath %.h $(ECONOTAGDIR)
+vpath %.S $(ECONOTAGDIR)
+CFLAGS += -I $(ECONOTAGDIR) -DPLATFORM_CONF=\"platform-conf.h\"
+
+BBMC=$(CONTIKI)/cpu/mc1322x/tools/bbmc
+%.bin: %_red-io.bin
+	cp $< $@
+
+%.upload: %.bin
+ifndef PROGPORT
+	@echo You must define PROGPORT.
+	@echo Examples:
+	@echo $$ make TARGET=red-io blink.upload PROGPORT=/dev/ttyUSB1
+else
+	sudo $(CONTIKI)/cpu/mc1322x/tools/mc1322x-load.pl -f $*.bin -t $(PROGPORT)
+endif
+
+%.upload-rom: $(MIST)/platform/$(TARGET)/flasher_m12.bin 
+ifndef PROGPORT
+	@echo You must define PROGPORT.
+	@echo Examples:
+	@echo $$ make TARGET=red-io blink.upload-rom PROGPORT=/dev/ttyUSB1
+else
+	@echo
+	@echo When the upload has finished, reset the device to start:
+	@echo  $$ sudo make reset TARGET=red-io
+	@echo
+	@sleep 3
+	make $*.bin
+	sudo $(CONTIKI)/cpu/mc1322x/tools/mc1322x-load.pl -b 200 -f $(MIST)/platform/$(TARGET)/flasher_m12.bin -s $*.bin -t $(PROGPORT) \
+	-c '$(BBMC) -l redbee-econotag erase'
+endif
+
+erase-rom:
+	$(BBMC) -l redbee-econotag erase
+
+reset:
+	$(BBMC) -l redbee-econotag reset
+

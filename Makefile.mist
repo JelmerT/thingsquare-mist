@@ -1,0 +1,41 @@
+APPDIRS+=$(MIST)/apps $(MIST)/dev
+TARGETDIRS+=$(MIST)/platform $(MIST)/cpu
+
+# Thingsquare Mist always includes the mist-conf application, which
+# contains the Thingsquare Mist configuration variables.
+
+MISTAPPS+=mist-conf
+
+# Add a few more default Thingsquare Mist applications
+MISTAPPS+=aes drowsie ip64-addr ip64 mdns udp-socket tcp-socket websocket
+MISTAPPS+=http-socket simple-rpl
+
+APPS+=$(MISTAPPS)
+
+IDSTR=${shell git rev-parse --short HEAD 2>/dev/null}
+ifneq ($(IDSTR),)
+CFLAGS += -DMIST_COMMIT_ID=\"$(IDSTR)\"
+endif
+
+CFLAGS += -DMIST_TARGET=\"$(TARGET)\"
+
+
+ifneq (,$(MISTDEVS))
+ ${error MISTDEVS is deprecated and must not be used}
+endif
+
+# The Mist is IPv6-only, unless we define MISTRIME - this is intended to be used only for debugging
+ifndef MISTRIME
+WITH_UIP6=1
+UIP_CONF_IPV6=1
+CFLAGS+=-DUIP_CONF_IPV6=1
+ifeq ($(MISTRPL),0)
+#UIP_CONF_RPL=0
+else
+UIP_CONF_RPL=1
+CFLAGS+= -DUIP_CONF_IPV6_RPL=1
+endif
+endif
+
+CONTIKI=$(MIST)/contiki
+include $(CONTIKI)/Makefile.include

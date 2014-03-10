@@ -1,0 +1,23 @@
+
+ARCH_CONTIKI += enc28j60-arch.c
+
+CFLAGS += -I$(MIST)/platform/$(TARGET)
+
+CFLAGS += -DINCLUDE_SUBPLATFORM_CONF=1
+
+vpath %.c $(MIST)/platform/mist-spirit1
+vpath %.h $(MIST)/platform/mist-spirit1
+vpath %.S $(MIST)/platform/mist-spirit1
+CFLAGS += -I $(MIST)/platform/mist-spirit1
+
+include $(MIST)/platform/mist-spirit1/Makefile.mist-spirit1
+CONTIKI_TARGET_DIRS_NEW := ${addprefix $(MIST)/platform/mist-spirit1/, $(CONTIKI_TARGET_DIRS)}
+CONTIKI_TARGET_DIRS += $(CONTIKI_TARGET_DIRS_NEW)
+
+contiki-$(TARGET).a: ${addprefix $(OBJECTDIR)/,symbols.o}
+#	$(AR) rcf $@ $^
+
+PLATFORMAPPS += ip64 enc28j60
+
+vpath %.c $(MIST)/platform/mist-spirit1
+CFLAGS += -I $(MIST)/platform/mist-spirit1

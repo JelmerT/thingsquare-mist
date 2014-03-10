@@ -1,0 +1,2 @@
+ip64-webserver_src = ip64-webserver.c httpd.c ip64-webserver-http-strings.c psock.c memb.c \
+                     httpd-fs.c httpd-cgi.c

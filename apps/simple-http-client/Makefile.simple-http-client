@@ -1,0 +1,4 @@
+simple-http-client_src = http-client.c webclient.c http-strings.c http-user-agent-string.c
+
+#APPS+=webbrowser
+#include $(CONTIKI)/apps/webbrowser//Makefile.webbrowser

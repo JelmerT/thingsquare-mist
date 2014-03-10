@@ -1,0 +1,13 @@
+IP64_SLIP = ip64-slip-interface.c
+IP64_TAP = ip64-tap-driver.c
+
+IP64_ETH = ip64-eth.c ip64-arp.c ip64-eth-interface.c
+IP64_DHCP = ip64-ipv4-dhcp.c dhcpv4.c
+
+IP64 = ip64.c ip64-addrmap.c ip64-null-driver.c ip64-special-ports.c
+
+ip64_src = $(IP64) $(IP64_DHCP) $(IP64_TAP) $(IP64_SLIP) $(IP64_ETH)
+
+APPS += ip64-addr mdns
+include $(MIST)/apps/ip64-addr/Makefile.ip64-addr
+include $(MIST)/apps/mdns/Makefile.mdns
